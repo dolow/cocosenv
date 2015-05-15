@@ -1,0 +1,38 @@
+#!/bin/sh
+
+if [ -z "$COCOS_VERSIONS_DIR" ]; then
+  echo 'please define cocos2d-x versions directory as $COCOS_VERSIONS_DIR';
+  exit
+fi
+
+if [ -z "$COCOS_PREFIX" ]; then
+  COCOS_PREFIX="cocos2d-x-";
+fi
+
+if [ "$1" == "-l" ] || [ "$1" == "--list" ] || [ "$1" == "list" ]; then
+  ls -A -1 $COCOS_VERSIONS_DIR | grep $COCOS_PREFIX | cut -c `expr 1 + ${#COCOS_PREFIX}`-
+  exit
+fi
+
+COCOS_COMMAND="cocos"
+COCOS_COMMAND_PATH="/tools/cocos2d-console/bin"
+TARGET_COCOS_VERSION="$COCOS_VERSIONS_DIR$COCOS_PREFIX$1"
+
+if [ "$2" == "-p" ] || [ "$2" == "--path" ] || [ "$2" == "path" ]; then
+  echo $TARGET_COCOS_VERSION/
+  exit
+fi
+
+if [ -d "$TARGET_COCOS_VERSION" ]; then
+  if [ -f "$TARGET_COCOS_VERSION$COCOS_COMMAND_PATH/$COCOS_COMMAND" ]; then
+    shift
+    
+    env COCOS_CONSOLE_ROOT=$TARGET_COCOS_VERSION$COCOS_COMMAND_PATH | grep COCOS_CONSOLE_ROOT
+    
+    "$TARGET_COCOS_VERSION$COCOS_COMMAND_PATH/$COCOS_COMMAND" "$@"
+  else
+    echo "no cocos command found in version $1 ($TARGET_COCOS_VERSION$COCOS_COMMAND_PATH/$COCOS_COMMAND)"
+  fi
+else
+  echo "no such directory $TARGET_COCOS_VERSION"
+fi
